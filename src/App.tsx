@@ -109,7 +109,13 @@ function App() {
           <AiAssistant onSimExplored={handleSimExplored} />
         )}
         {activeTab === 'simlab' && (
-          <SimLab onSimExplored={handleSimExplored} />
+          <SimLab
+            onSimExplored={handleSimExplored}
+            onOpenAssistant={(simName) => {
+              setActiveTab('assistant');
+              handleSimExplored(simName);
+            }}
+          />
         )}
         {activeTab === 'formulas' && (
           <FormulaSolver onFormulaSolved={handleFormulaSolved} />

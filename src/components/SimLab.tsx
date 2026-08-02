@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Sliders, Info, Zap, Activity, ShieldAlert, Cpu } from 'lucide-react';
+import { Play, Pause, RotateCcw, Sliders, Info, Zap, Activity, ShieldAlert, Cpu, BookOpen, Image, ClipboardList, List, CheckCircle2, Globe, Award, Sparkles } from 'lucide-react';
 
 interface Planet {
   x: number;
@@ -20,7 +20,7 @@ interface GasParticle {
   color: string;
 }
 
-export const SimLab: React.FC<{ onSimExplored: (simName?: string) => void }> = ({ onSimExplored }) => {
+export const SimLab: React.FC<{ onSimExplored: (simName?: string) => void; onOpenAssistant: (simName: string) => void }> = ({ onSimExplored, onOpenAssistant }) => {
   const [activeLab, setActiveLab] = useState<'orbital' | 'gas' | 'rlc'>('orbital');
 
   // 1. Orbital Mechanics State
@@ -56,6 +56,296 @@ export const SimLab: React.FC<{ onSimExplored: (simName?: string) => void }> = (
     orbital: 'Orbital Mechanics Lab',
     gas: 'Ideal Gas Law Chamber',
     rlc: 'RLC Circuit Lab',
+  };
+
+  type LabContent = {
+    concept: string;
+    applications: string[];
+    workingPrinciple: string[];
+    notes: string[];
+    formulas: Array<{ formula: string; variables: string; units: string }>;
+    solvedExamples: Array<{ question: string; solution: string }>;
+    practiceQuestions: string[];
+    mcqs: Array<{ question: string; options: string[]; answer: string }>;
+    numericalProblems: Array<{ question: string; solution: string }>;
+    mistakes: string[];
+    tips: string[];
+    diagrams: Array<{ src: string; caption: string }>;
+    explanation: string;
+    controlNotes: string[];
+    relatedChapters: string[];
+    relatedFormulas: string[];
+    previousYearQuestions: string[];
+    outcome: string;
+  };
+
+  const labContent: Record<'orbital' | 'gas' | 'rlc', LabContent> = {
+    orbital: {
+      concept: 'Orbital mechanics studies how objects move under gravity, including planets, satellites, and spacecraft. It connects Newton’s law of gravitation with circular and elliptical motion.',
+      applications: [
+        'Satellite navigation and GPS orbit design',
+        'Spacecraft transfer between Earth and Moon',
+        'Predicting planetary motion for astronomy',
+        'Designing stable orbits for weather satellites',
+        'Planning launch trajectories and re-entry paths',
+      ],
+      workingPrinciple: [
+        'A central mass creates a gravitational field that attracts smaller bodies.',
+        'The orbiting object is constantly falling toward the mass while moving sideways.',
+        'The balance of centripetal force and gravity determines the orbit shape.',
+      ],
+      notes: [
+        'The orbital speed depends on distance from the central mass.',
+        'A higher central mass or smaller radius increases the gravitational pull.',
+        'Real orbits are nearly elliptical and can be influenced by additional forces.',
+      ],
+      formulas: [
+        { formula: 'F = G m₁ m₂ / r²', variables: 'F (force), m₁, m₂, r', units: 'N, kg, kg, m' },
+        { formula: 'v = √(G M / r)', variables: 'v (velocity), G, M, r', units: 'm/s, N·m²/kg², kg, m' },
+      ],
+      solvedExamples: [
+        { question: 'Find orbital speed for a 2000 kg satellite at 10000 km from a 5×10^24 kg planet.', solution: 'Use v = √(GM/r). Convert radius to meters and plug values to get the speed in m/s.' },
+        { question: 'If the orbital radius doubles, how does the required speed change?', solution: 'Since v ∝ 1/√r, doubling r reduces speed by 1/√2, about 0.71 times the original speed.' },
+      ],
+      practiceQuestions: [
+        'Why does a satellite remain in orbit instead of falling straight down?',
+        'How does increasing central mass affect orbital velocity?',
+        'What happens to orbital period when radius is larger?',
+        'Why are orbits often close to circular for satellites?',
+        'How does launch velocity influence orbit shape?',
+      ],
+      mcqs: [
+        { question: 'What force keeps a satellite in orbit?', options: ['Friction', 'Electric force', 'Gravitational force', 'Magnetic force'], answer: 'Gravitational force' },
+        { question: 'If orbital radius increases, orbital speed', options: ['Increases', 'Decreases', 'Remains same', 'Becomes zero'], answer: 'Decreases' },
+        { question: 'The gravitational force between two masses is inversely proportional to', options: ['r', 'r²', 'r³', '√r'], answer: 'r²' },
+        { question: 'A circular orbit requires centripetal acceleration toward the', options: ['velocity', 'orbit plane', 'central mass', 'outside direction'], answer: 'central mass' },
+        { question: 'Kepler’s third law links orbital period and', options: ['mass', 'radius', 'charge', 'temperature'], answer: 'radius' },
+        { question: 'A higher star mass at same radius produces', options: ['lower speed', 'higher speed', 'no change', 'negative speed'], answer: 'higher speed' },
+        { question: 'Escape velocity is the speed needed to', options: ['stop orbiting', 'leave gravitational field', 'fall faster', 'increase altitude'], answer: 'leave gravitational field' },
+        { question: 'An orbiting body continuously falls toward the center but never', options: ['slows down', 'reaches it', 'changes direction', 'loses mass'], answer: 'reaches it' },
+        { question: 'In the formula F = G m₁ m₂ / r², G is called', options: ['electric constant', 'gravitational constant', 'gas constant', 'magnetic constant'], answer: 'gravitational constant' },
+        { question: 'The shape of a stable satellite path under gravity is', options: ['straight line', 'circle or ellipse', 'parabola', 'zigzag'], answer: 'circle or ellipse' },
+      ],
+      numericalProblems: [
+        { question: 'Calculate orbital speed for a satellite 8000 km from Earth center with M=5.97×10^24 kg.', solution: 'Use v = √(GM/r); convert 8000 km to 8.0×10^6 m and compute the value.' },
+        { question: 'If a satellite radius changes from 7000 km to 14000 km, what is the speed factor?', solution: 'Speed changes by 1/√2, so it becomes about 0.71 times the initial speed.' },
+        { question: 'Compute gravitational force between 1000 kg satellite and 5×10^24 kg planet at 1.5×10^7 m.', solution: 'Apply F = G m₁ m₂ / r² and evaluate with G = 6.67×10^-11.' },
+        { question: 'Find the orbital period of a satellite at 10000 km radius assuming circular orbit.', solution: 'Use T = 2πr/v with v = √(GM/r).' },
+        { question: 'A satellite gains speed. Its orbit becomes', solution: 'more elliptical or it may escape if speed is high enough.' },
+      ],
+      mistakes: [
+        'Assuming orbital motion is due to fuel thrust rather than gravity.',
+        'Using linear instead of inverse-square dependence on distance.',
+        'Treating velocity and acceleration as the same quantity.',
+        'Forgetting to convert kilometers to meters in formulas.',
+      ],
+      tips: [
+        'Use consistent SI units before plugging into formulas.',
+        'Remember v = √(GM/r) for circular orbit speed.',
+        'Check whether the orbit is circular or elliptical first.',
+        'Draw the gravitational force toward the central body.',
+      ],
+      diagrams: [
+        { src: 'https://images.unsplash.com/photo-1512676667128-44f496fd6bdb?auto=format&fit=crop&w=900&q=80', caption: 'Orbital trajectory around a planetary body' },
+        { src: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=900&q=80', caption: 'Satellite orbit visualization' },
+      ],
+      explanation: 'Adjust star mass, orbital radius, and initial velocity. A heavier star pulls more strongly and requires faster orbital speed; a larger radius lowers speed and lengthens the orbit.',
+      controlNotes: [
+        'Star Mass: increases gravitational attraction and raises orbital velocity.',
+        'Orbital Distance: sets the radius of the path around the central mass.',
+        'Initial Velocity: controls whether the object settles into a stable orbit or escapes.',
+      ],
+      relatedChapters: ['Motion in a Straight Line', 'Newton’s Laws', 'Gravitation'],
+      relatedFormulas: ['F = G m₁ m₂ / r²', 'v = √(GM/r)', 'T = 2π√(r³/GM)'],
+      previousYearQuestions: [
+        'Define gravitational force and state its dependence on distance.',
+        'Explain why satellites stay in orbit around Earth.',
+        'Calculate orbital speed for a circular orbit.',
+        'State Kepler’s third law in words.',
+        'Why does a higher orbit have a longer period?',
+      ],
+      outcome: 'You understand how gravity and circular motion create stable orbits, and how orbit size and central mass determine velocity.',
+    },
+    gas: {
+      concept: 'The ideal gas law describes how pressure, volume, and temperature relate for gas particles, assuming random motion and elastic collisions.',
+      applications: [
+        'Design of car engines and combustion chambers',
+        'Understanding weather balloon expansion',
+        'Predicting pressure changes in gas cylinders',
+        'Analyzing breathing and lung mechanics',
+        'Working with refrigeration and air conditioning systems',
+      ],
+      workingPrinciple: [
+        'Gas particles move randomly and collide with container walls.',
+        'Each collision transfers momentum, creating pressure on the walls.',
+        'Higher temperature increases particle speed and therefore pressure.',
+      ],
+      notes: [
+        'Volume is the container size available to gas particles.',
+        'Temperature measures average kinetic energy of particles.',
+        'For the ideal gas, interactions between particles are negligible.',
+      ],
+      formulas: [
+        { formula: 'PV = nRT', variables: 'P, V, n, R, T', units: 'Pa, m³, mol, J/(mol·K), K' },
+        { formula: 'P = N k_B T / V', variables: 'P, N, k_B, T, V', units: 'Pa, count, J/K, K, m³' },
+      ],
+      solvedExamples: [
+        { question: 'Find pressure if 2 mol of gas occupies 0.05 m³ at 300 K.', solution: 'Use PV=nRT with R=8.314, so P = 2×8.314×300/0.05.' },
+        { question: 'If temperature doubles while volume is constant, how does pressure change?', solution: 'Pressure doubles according to P ∝ T at constant volume.' },
+      ],
+      practiceQuestions: [
+        'What happens to pressure when volume decreases at fixed temperature?',
+        'Why does increasing temperature raise pressure in a sealed container?',
+        'How is pressure measured from particle collisions?',
+        'When is the ideal gas law a good approximation?',
+        'What is the effect of increasing molecule count at constant V and T?',
+      ],
+      mcqs: [
+        { question: 'In the ideal gas law, increasing temperature at constant volume makes pressure', options: ['increase', 'decrease', 'stay same', 'become zero'], answer: 'increase' },
+        { question: 'PV = nRT holds when gas behaves', options: ['ideally', 'as a liquid', 'as a solid', 'nonlinearly'], answer: 'ideally' },
+        { question: 'Pressure arises from molecules hitting the', options: ['container walls', 'center of mass', 'each other only', 'outside air'], answer: 'container walls' },
+        { question: 'If volume doubles at constant pressure, temperature must', options: ['double', 'halve', 'stay same', 'become zero'], answer: 'double' },
+        { question: 'The gas constant R has units', options: ['J/K', 'J/(mol·K)', 'Pa·m³', 'kg/m³'], answer: 'J/(mol·K)' },
+        { question: 'A sealed vessel with fixed moles and volume is an example of', options: ['isobaric', 'isochoric', 'isothermal', 'adiabatic'], answer: 'isochoric' },
+        { question: 'Ideal gas particles are assumed to have', options: ['no volume', 'high volume', 'sticky surfaces', 'fixed positions'], answer: 'no volume' },
+        { question: 'Gas pressure increases if temperature rises because', options: ['particles move faster', 'volume shrinks', 'moles change', 'gravity increases'], answer: 'particles move faster' },
+        { question: 'If molecule count increases at constant T and V, pressure', options: ['increases', 'decreases', 'stays same', 'becomes negative'], answer: 'increases' },
+        { question: 'The formula P = N k_B T / V uses k_B as', options: ['Boltzmann constant', 'gas constant', 'Coulomb constant', 'Planck constant'], answer: 'Boltzmann constant' },
+      ],
+      numericalProblems: [
+        { question: 'Calculate pressure for 3 mol gas at 250 K in 0.1 m³.', solution: 'P = nRT/V = 3×8.314×250/0.1.' },
+        { question: 'What is pressure if volume halves at constant T?', solution: 'Pressure doubles because P ∝ 1/V.' },
+        { question: 'Find temperature if 1 mol gas at 101325 Pa occupies 0.024 m³.', solution: 'T = PV/nR.' },
+        { question: 'If N doubles while V and T fixed, pressure', solution: 'doubles.' },
+        { question: 'Compute pressure for 2 mol at 100 kPa in 0.02 m³.', solution: 'Use PV=nRT rearranged or numerical substitution.' },
+      ],
+      mistakes: [
+        'Forgetting to convert temperature to kelvin.',
+        'Treating n and N as the same quantity without conversion.',
+        'Using volume in liters when formula requires m³.',
+        'Assuming all gases are ideal at very high pressure.',
+      ],
+      tips: [
+        'Use PV = nRT with SI units for exam calculations.',
+        'At fixed volume, pressure is proportional to temperature.',
+        'Check whether the problem gives moles or molecules before using formulas.',
+        'Write down units for P, V, n, R, and T clearly.',
+      ],
+      diagrams: [
+        { src: 'https://images.unsplash.com/photo-1542327897-2ec0d8eb48d2?auto=format&fit=crop&w=900&q=80', caption: 'Gas particles colliding inside a chamber' },
+        { src: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80', caption: 'Thermodynamic process in a piston' },
+      ],
+      explanation: 'Temperature controls particle speed, volume sets the container size, and particle count changes collision frequency. Together they determine the pressure reading.',
+      controlNotes: [
+        'Chamber Temperature: raises particle kinetic energy and increases pressure.',
+        'Chamber Volume: larger volume gives more space, lowering collisions and pressure.',
+        'Molecule Count: more particles produce more wall impacts and higher pressure.',
+      ],
+      relatedChapters: ['Units and Measurements', 'Kinetic Theory', 'Thermodynamics'],
+      relatedFormulas: ['PV = nRT', 'P = N k_B T / V', 'ρ = m/V'],
+      previousYearQuestions: [
+        'State the ideal gas law and explain each symbol.',
+        'How does pressure change when volume decreases at constant temperature?',
+        'Calculate the pressure of a gas sample at given conditions.',
+        'What is the effect of temperature on gas pressure?',
+        'Why is kelvin used in gas law calculations?',
+      ],
+      outcome: 'You can explain how pressure, temperature, and volume are linked by particle motion and apply the ideal gas law correctly.',
+    },
+    rlc: {
+      concept: 'RLC circuits combine resistance, inductance, and capacitance to shape AC current and voltage. Their behavior depends on impedance and resonance.',
+      applications: [
+        'Tuning radio frequencies in broadcast receivers',
+        'Designing filters for audio and communication systems',
+        'Building timing circuits in oscillators',
+        'Measuring impedance in power electronics',
+        'Studying resonant behavior in wireless charging systems',
+      ],
+      workingPrinciple: [
+        'Resistance dissipates energy as heat and limits current.',
+        'Inductance stores energy in the magnetic field and resists changes in current.',
+        'Capacitance stores energy in the electric field and resists changes in voltage.',
+      ],
+      notes: [
+        'Resonance occurs when inductive and capacitive reactance cancel each other.',
+        'At resonance, circuit impedance is lowest and current is highest.',
+        'Phase angle tells whether current leads or lags voltage.',
+      ],
+      formulas: [
+        { formula: 'Z = √(R² + (X_L - X_C)²)', variables: 'Z, R, X_L, X_C', units: 'Ω, Ω, Ω, Ω' },
+        { formula: 'X_L = 2πfL', variables: 'X_L, f, L', units: 'Ω, Hz, H' },
+        { formula: 'X_C = 1 / (2πfC)', variables: 'X_C, f, C', units: 'Ω, Hz, F' },
+      ],
+      solvedExamples: [
+        { question: 'Find impedance when R=50Ω, L=0.4H, C=40μF, f=60Hz.', solution: 'Compute X_L and X_C, then Z = √(R²+(X_L−X_C)²).' },
+        { question: 'At resonance, what is the phase relationship between V and I?', solution: 'They are in phase because X_L = X_C and reactive effects cancel.' },
+      ],
+      practiceQuestions: [
+        'How does increasing frequency affect inductive reactance?',
+        'What happens when X_L equals X_C?',
+        'Why does resistance still matter at resonance?',
+        'How does capacitance influence current amplitude?',
+        'What does the phase angle indicate in an RLC circuit?',
+      ],
+      mcqs: [
+        { question: 'In an RLC circuit, resonance occurs when', options: ['R=0', 'X_L=X_C', 'V=I', 'f=0'], answer: 'X_L=X_C' },
+        { question: 'Inductive reactance increases with', options: ['frequency', 'capacitance', 'resistance', 'voltage'], answer: 'frequency' },
+        { question: 'Capacitive reactance is inversely proportional to', options: ['frequency', 'inductance', 'resistance', 'voltage'], answer: 'frequency' },
+        { question: 'Impedance Z has the units of', options: ['A', 'V', 'Ω', 'W'], answer: 'Ω' },
+        { question: 'At resonance, the circuit behaves like a', options: ['pure resistor', 'pure inductor', 'pure capacitor', 'battery'], answer: 'pure resistor' },
+        { question: 'Phase angle is positive when circuit is', options: ['inductive', 'capacitive', 'resistive', 'open'], answer: 'inductive' },
+        { question: 'A higher resistance causes current to', options: ['decrease', 'increase', 'stay same', 'reverse'], answer: 'decrease' },
+        { question: 'If frequency is below resonance, the circuit is', options: ['capacitive', 'inductive', 'resistive', 'open'], answer: 'capacitive' },
+        { question: 'Reactance X_C decreases when capacitance', options: ['increases', 'decreases', 'stays same', 'reverses'], answer: 'increases' },
+        { question: 'The voltage across an inductor lags current by', options: ['90°', '0°', '45°', '180°'], answer: '90°' },
+      ],
+      numericalProblems: [
+        { question: 'Calculate X_L for L=0.4 H at 60 Hz.', solution: 'X_L = 2πfL = 2π×60×0.4.' },
+        { question: 'Calculate X_C for C=40 μF at 60 Hz.', solution: 'X_C = 1/(2πfC) with C in farads.' },
+        { question: 'Find Z if R=50Ω, X_L=150Ω and X_C=100Ω.', solution: 'Z = √(50²+(150−100)²).' },
+        { question: 'What is the resonant frequency for L=0.4 H and C=40 μF?', solution: 'f_0 = 1/(2π√(LC)).' },
+        { question: 'If V₀=120 V and Z=100Ω, what is peak current?', solution: 'I₀ = V₀/Z = 120/100.' },
+      ],
+      mistakes: [
+        'Confusing current and voltage phase relationships.',
+        'Forgetting to convert microfarads to farads in X_C.',
+        'Using DC formulas for AC reactance problems.',
+        'Assuming resonance occurs at all frequencies.',
+      ],
+      tips: [
+        'Always use C in farads and L in henries.',
+        'Check whether the circuit is inductive or capacitive before answering phase questions.',
+        'At resonance, current is determined mainly by R.',
+        'Write X_L and X_C separately before combining them.',
+      ],
+      diagrams: [
+        { src: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80', caption: 'AC circuit components and waveform analysis' },
+        { src: 'https://images.unsplash.com/photo-1504274066651-8d31a536b11a?auto=format&fit=crop&w=900&q=80', caption: 'Resonant circuit diagram with oscilloscope' },
+      ],
+      explanation: 'Resistance dissipates energy, inductance resists current change, and capacitance resists voltage change. The balance of X_L and X_C determines whether the circuit is inductive, capacitive, or resonant.',
+      controlNotes: [
+        'Resistance: increases impedance and reduces current amplitude.',
+        'Inductance: raises X_L and can make the circuit inductive.',
+        'Capacitance: lowers X_C and can make the circuit capacitive.',
+        'Frequency: moves the circuit toward or away from resonance.',
+      ],
+      relatedChapters: ['Alternating Current', 'Magnetic Fields', 'Electromagnetic Waves'],
+      relatedFormulas: ['X_L = 2πfL', 'X_C = 1/(2πfC)', 'Z = √(R² + (X_L − X_C)²)'],
+      previousYearQuestions: [
+        'Define impedance in an RLC circuit.',
+        'Explain resonance in terms of reactances.',
+        'Calculate inductive reactance for a given frequency.',
+        'What happens to current at resonance?',
+        'State whether current leads or lags in a capacitive circuit.',
+      ],
+      outcome: 'You can identify the role of resistance, inductance, and capacitance and describe how resonance alters AC behavior in an RLC circuit.',
+    },
+  };
+
+  const activeLabTitle = labNames[activeLab];
+  const activeLabContent = labContent[activeLab];
+  const handleOpenAiAssistant = () => {
+    onOpenAssistant(activeLabTitle);
   };
 
   useEffect(() => {
@@ -992,6 +1282,230 @@ export const SimLab: React.FC<{ onSimExplored: (simName?: string) => void }> = (
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="lg:col-span-12 space-y-6">
+        <div className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-xl shadow-slate-950/20">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div className="max-w-3xl space-y-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.22em] text-cyan-200">
+                <BookOpen className="h-4 w-4" />
+                SIM LAB GUIDE
+              </div>
+              <h3 className="text-2xl font-bold text-white">{activeLabTitle} — Learning Companion</h3>
+              <p className="text-sm leading-6 text-slate-400">{activeLabContent.concept}</p>
+            </div>
+            <button
+              onClick={handleOpenAiAssistant}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:bg-cyan-400"
+            >
+              <Sparkles className="h-4 w-4" />
+              AI Explore
+            </button>
+          </div>
+
+          <div className="mt-8 grid gap-6 xl:grid-cols-3">
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <Info className="h-4 w-4 text-cyan-300" /> Physics Concept
+              </div>
+              <p className="text-sm leading-6 text-slate-300">{activeLabContent.concept}</p>
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <Globe className="h-4 w-4 text-cyan-300" /> Real Life Applications
+              </div>
+              <ul className="space-y-3 text-sm leading-6 text-slate-300">
+                {activeLabContent.applications.map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="mt-1 h-2.5 w-2.5 rounded-full bg-cyan-400" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <ClipboardList className="h-4 w-4 text-cyan-300" /> Working Principle
+              </div>
+              <ol className="space-y-3 text-sm leading-6 text-slate-300 list-decimal list-inside">
+                {activeLabContent.workingPrinciple.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-6 xl:grid-cols-3">
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <List className="h-4 w-4 text-cyan-300" /> Interactive Notes
+              </div>
+              <ul className="space-y-3 text-sm leading-6 text-slate-300">
+                {activeLabContent.notes.map((note) => (
+                  <li key={note} className="flex items-start gap-2">
+                    <span className="mt-1 h-2.5 w-2.5 rounded-full bg-cyan-400" />
+                    <span>{note}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <CheckCircle2 className="h-4 w-4 text-cyan-300" /> Important Formula
+              </div>
+              <div className="space-y-4 text-sm text-slate-300">
+                {activeLabContent.formulas.map((item) => (
+                  <div key={item.formula} className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-3">
+                    <p className="font-semibold text-white">{item.formula}</p>
+                    <p className="text-slate-400">Variables: {item.variables}</p>
+                    <p className="text-slate-400">SI Units: {item.units}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <Award className="h-4 w-4 text-cyan-300" /> Learning Outcome
+              </div>
+              <p className="text-sm leading-6 text-slate-300">{activeLabContent.outcome}</p>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <Zap className="h-4 w-4 text-cyan-300" /> Simulation Explanation
+              </div>
+              <p className="text-sm leading-6 text-slate-300">{activeLabContent.explanation}</p>
+              <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+                {activeLabContent.controlNotes.map((note) => (
+                  <li key={note} className="flex items-start gap-2">
+                    <span className="mt-1 h-2.5 w-2.5 rounded-full bg-cyan-400" />
+                    <span>{note}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <Cpu className="h-4 w-4 text-cyan-300" /> Related Chapters & Formulas
+              </div>
+              <div className="space-y-4 text-sm text-slate-300">
+                <div>
+                  <p className="font-semibold text-white">Related Chapters</p>
+                  <ul className="mt-3 space-y-2">
+                    {activeLabContent.relatedChapters.map((chapter) => (
+                      <li key={chapter} className="rounded-2xl border border-slate-800/70 bg-slate-950/40 px-3 py-2">{chapter}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-semibold text-white">Related Formulas</p>
+                  <ul className="mt-3 space-y-2">
+                    {activeLabContent.relatedFormulas.map((formula) => (
+                      <li key={formula} className="rounded-2xl border border-slate-800/70 bg-slate-950/40 px-3 py-2">{formula}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-6 xl:grid-cols-3">
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <BookOpen className="h-4 w-4 text-cyan-300" /> Previous Year Questions
+              </div>
+              <ul className="space-y-3 text-sm leading-6 text-slate-300">
+                {activeLabContent.previousYearQuestions.map((item) => (
+                  <li key={item} className="rounded-2xl border border-slate-800/70 bg-slate-950/40 px-3 py-2">{item}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5 xl:col-span-2">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <Image className="h-4 w-4 text-cyan-300" /> Diagram Section
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {activeLabContent.diagrams.map((item) => (
+                  <div key={item.src} className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/40">
+                    <img loading="lazy" src={item.src} alt={item.caption} className="h-48 w-full object-cover" />
+                    <div className="p-3 text-sm text-slate-300">{item.caption}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <CheckCircle2 className="h-4 w-4 text-cyan-300" /> Practice Questions
+              </div>
+              <ul className="space-y-3 text-sm leading-6 text-slate-300">
+                {activeLabContent.practiceQuestions.map((question) => (
+                  <li key={question} className="rounded-2xl border border-slate-800/70 bg-slate-950/40 px-3 py-2">{question}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5 xl:col-span-2">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <ClipboardList className="h-4 w-4 text-cyan-300" /> MCQs
+              </div>
+              <div className="space-y-4 text-sm leading-6 text-slate-300">
+                {activeLabContent.mcqs.map((item, idx) => (
+                  <div key={`${item.question}-${idx}`} className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-3">
+                    <p className="font-semibold text-white">{idx + 1}. {item.question}</p>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                      {item.options.map((option) => (
+                        <div key={option} className="rounded-lg border border-slate-800/80 bg-slate-900 px-3 py-2 text-slate-300">{option}</div>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-sm font-medium text-cyan-300">Answer: {item.answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <BookOpen className="h-4 w-4 text-cyan-300" /> Numerical Problems
+              </div>
+              <ul className="space-y-4 text-sm leading-6 text-slate-300">
+                {activeLabContent.numericalProblems.map((item, idx) => (
+                  <li key={`${item.question}-${idx}`} className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-3">
+                    <p className="font-semibold text-white">{item.question}</p>
+                    <p className="mt-2 text-slate-400">Solution: {item.solution}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+                <ShieldAlert className="h-4 w-4 text-cyan-300" /> Common Mistakes
+              </div>
+              <ul className="space-y-3 text-sm leading-6 text-slate-300">
+                {activeLabContent.mistakes.map((mistake) => (
+                  <li key={mistake} className="rounded-2xl border border-slate-800/70 bg-slate-950/40 px-3 py-2">{mistake}</li>
+                ))}
+              </ul>
+              <div className="mt-5 rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4">
+                <p className="font-semibold text-white mb-3">Exam Tips</p>
+                <ul className="space-y-2 text-sm leading-6 text-slate-300">
+                  {activeLabContent.tips.map((tip) => (
+                    <li key={tip} className="flex items-start gap-2">
+                      <span className="mt-1 h-2.5 w-2.5 rounded-full bg-cyan-400" />
+                      <span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

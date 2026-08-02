@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   BookOpen,
   BrainCircuit,
@@ -15,6 +15,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { t, type Lang } from '../i18n';
 import { chapterLibrary, type ChapterDiagram, type Grade } from './chapterData';
+import { generateQuestions, type GeneratedQuestionSet, type GeminiQuestionRequest } from '../lib/GeminiService';
 
 interface ChapterLearningProps {
   lang: Lang;
@@ -202,6 +203,9 @@ const DiagramPreview: React.FC<{ diagram?: ChapterDiagram }> = ({ diagram }) => 
 export const ChapterLearning: React.FC<ChapterLearningProps> = ({ lang }) => {
   const [selectedGrade, setSelectedGrade] = useState<Grade>('11');
   const [selectedChapterId, setSelectedChapterId] = useState<string>('physical-world');
+  const [aiQuestions, setAiQuestions] = useState<GeneratedQuestionSet | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiStatus, setAiStatus] = useState<string>('');
 
   const grades: Array<{ value: Grade; label: string }> = [
     { value: '11', label: t(lang, 'class11Tag') },
@@ -211,6 +215,30 @@ export const ChapterLearning: React.FC<ChapterLearningProps> = ({ lang }) => {
   const chapters = chapterLibrary[selectedGrade];
   const activeChapter = chapters.find((chapter) => chapter.id === selectedChapterId) ?? chapters[0];
   const labels = sectionTitles[lang];
+
+  const aiRequest = useMemo<GeminiQuestionRequest>(() => ({
+    className: selectedGrade,
+    chapter: activeChapter?.title ?? 'Physics',
+    difficulty: 'Intermediate',
+    numberOfQuestions: 5,
+  }), [activeChapter?.title, selectedGrade]);
+
+  const handleGenerateQuestions = async () => {
+    if (!activeChapter) return;
+    setIsGenerating(true);
+    setAiStatus('');
+
+    try {
+      const result = await generateQuestions(aiRequest);
+      setAiQuestions(result);
+      setAiStatus('AI questions generated');
+    } catch {
+      setAiQuestions(null);
+      setAiStatus('Using Offline Questions');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -383,6 +411,49 @@ export const ChapterLearning: React.FC<ChapterLearningProps> = ({ lang }) => {
                   <p className="mt-2 leading-7 text-slate-300">{item.answer}</p>
                 </div>
               ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="AI Generated Questions" icon={Sparkles}>
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-slate-400">Generate dynamic practice questions for this chapter using Gemini.</p>
+                <button
+                  onClick={handleGenerateQuestions}
+                  disabled={isGenerating}
+                  className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-sm font-semibold text-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isGenerating ? 'Generating…' : 'Generate New Questions'}
+                </button>
+              </div>
+              {aiStatus ? <div className="text-sm text-amber-300">{aiStatus}</div> : null}
+              {!aiQuestions ? (
+                <div className="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4 text-sm text-slate-400">
+                  Use the button to create fresh MCQs, short, long, numerical, and viva questions. If the API is unavailable, the existing chapter questions remain available.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {aiQuestions.mcqs.slice(0, 3).map((item, index) => (
+                    <div key={`mcq-${index}`} className="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4">
+                      <p className="font-semibold text-white">{item.question}</p>
+                      <ul className="mt-2 space-y-2">
+                        {item.options.map((option) => (
+                          <li key={option} className="rounded-lg border border-slate-800/80 bg-slate-950/60 px-3 py-2 text-sm text-slate-300">
+                            {option}
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="mt-2 text-sm font-medium text-cyan-300">Answer: {item.answer}</p>
+                    </div>
+                  ))}
+                  {aiQuestions.shortQuestions.slice(0, 2).map((item, index) => (
+                    <div key={`short-${index}`} className="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4">
+                      <p className="font-semibold text-white">{item.question}</p>
+                      <p className="mt-2 text-sm text-cyan-300">{item.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </SectionCard>
 
