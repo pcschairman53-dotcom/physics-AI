@@ -19,6 +19,7 @@ import {
 function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [lang, setLang] = useState<Lang>('bn');
+  const [selectedChapterContext, setSelectedChapterContext] = useState<{ grade: '11' | '12'; title: string } | null>(null);
   const [userStats, setUserStats] = useState<UserStats>(() => loadUserStats());
 
   useEffect(() => {
@@ -85,6 +86,10 @@ function App() {
     });
   };
 
+  const handleChapterSelected = (grade: '11' | '12', title: string) => {
+    setSelectedChapterContext({ grade, title });
+  };
+
   return (
     <div className="relative min-h-screen min-w-0 text-slate-100 flex flex-col font-sans overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-200">
       <FormulaBackground />
@@ -106,7 +111,7 @@ function App() {
           />
         )}
         {activeTab === 'assistant' && (
-          <AiAssistant onSimExplored={handleSimExplored} />
+          <AiAssistant onSimExplored={handleSimExplored} selectedChapter={selectedChapterContext} />
         )}
         {activeTab === 'simlab' && (
           <SimLab
@@ -124,7 +129,7 @@ function App() {
           <QuizDashboard onQuizCompleted={handleQuizCompleted} />
         )}
         {activeTab === 'chapters' && (
-          <ChapterLearning lang={lang} />
+          <ChapterLearning lang={lang} onChapterSelected={handleChapterSelected} />
         )}
       </main>
 

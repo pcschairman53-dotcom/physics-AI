@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   BookOpen,
   BrainCircuit,
@@ -19,6 +19,7 @@ import { generateQuestions, type GeneratedQuestionSet, type GeminiQuestionReques
 
 interface ChapterLearningProps {
   lang: Lang;
+  onChapterSelected?: (grade: Grade, title: string) => void;
 }
 
 interface SectionCardProps {
@@ -200,7 +201,7 @@ const DiagramPreview: React.FC<{ diagram?: ChapterDiagram }> = ({ diagram }) => 
   );
 };
 
-export const ChapterLearning: React.FC<ChapterLearningProps> = ({ lang }) => {
+export const ChapterLearning: React.FC<ChapterLearningProps> = ({ lang, onChapterSelected }) => {
   const [selectedGrade, setSelectedGrade] = useState<Grade>('11');
   const [selectedChapterId, setSelectedChapterId] = useState<string>('physical-world');
   const [aiQuestions, setAiQuestions] = useState<GeneratedQuestionSet | null>(null);
@@ -215,6 +216,11 @@ export const ChapterLearning: React.FC<ChapterLearningProps> = ({ lang }) => {
   const chapters = chapterLibrary[selectedGrade];
   const activeChapter = chapters.find((chapter) => chapter.id === selectedChapterId) ?? chapters[0];
   const labels = sectionTitles[lang];
+
+  useEffect(() => {
+    if (!activeChapter) return;
+    onChapterSelected?.(selectedGrade, activeChapter.title);
+  }, [activeChapter?.title, onChapterSelected, selectedGrade]);
 
   const aiRequest = useMemo<GeminiQuestionRequest>(() => ({
     className: selectedGrade,

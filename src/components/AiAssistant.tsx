@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Sparkles, Play, Pause, RotateCcw, Info, Brain, Zap, HelpCircle, Layers, Sliders, ChevronDown } from 'lucide-react';
+import { generateQuestions, type GeneratedQuestionSet, type GeminiQuestionRequest } from '../lib/GeminiService';
 
 interface Message {
   sender: 'user' | 'ai';
@@ -15,7 +16,12 @@ interface Charge {
   q: number; // charge value, positive or negative
 }
 
-export const AiAssistant: React.FC<{ onSimExplored: (simName?: string) => void }> = ({ onSimExplored }) => {
+interface AiAssistantProps {
+  onSimExplored: (simName?: string) => void;
+  selectedChapter?: { grade: '11' | '12'; title: string } | null;
+}
+
+export const AiAssistant: React.FC<AiAssistantProps> = ({ onSimExplored, selectedChapter }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: 'ai',
@@ -25,6 +31,8 @@ export const AiAssistant: React.FC<{ onSimExplored: (simName?: string) => void }
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [activeSim, setActiveSim] = useState<'projectile' | 'electrostatic' | 'pendulum' | 'waves'>('projectile');
+  const [generatedQuestions, setGeneratedQuestions] = useState<GeneratedQuestionSet | null>(null);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
 
   // Simulation Sliders / Parameters
   // 1. Projectile Parameters
@@ -208,6 +216,36 @@ Observe the wave crests (cyan) and troughs (dark blue) propagating from the doub
     setInputMessage('');
     setIsTyping(true);
 
+    const shouldGenerateChapterQuestions = selectedChapter && /question|practice|generate|mcq|viva|numerical/i.test(userMsg);
+    if (shouldGenerateChapterQuestions) {
+      const request: GeminiQuestionRequest = {
+        className: selectedChapter.grade,
+        chapter: selectedChapter.title,
+        difficulty: 'Intermediate',
+        numberOfQuestions: 5,
+      };
+      setIsGeneratingQuestions(true);
+      generateQuestions(request)
+        .then((result) => {
+          setGeneratedQuestions(result);
+          setMessages((prev) => [
+            ...prev,
+            { sender: 'ai', text: `Here are some ${selectedChapter.title} practice questions for Class ${selectedChapter.grade}.`, equations: [] },
+          ]);
+        })
+        .catch(() => {
+          setMessages((prev) => [
+            ...prev,
+            { sender: 'ai', text: 'I could not fetch chapter questions right now, but I can still help explain concepts.', equations: [] },
+          ]);
+        })
+        .finally(() => {
+          setIsTyping(false);
+          setIsGeneratingQuestions(false);
+        });
+      return;
+    }
+
     // AI response logic based on keywords
     setTimeout(() => {
       let text = '';
@@ -301,6 +339,51 @@ Use the sliders on the right to set the launch parameters and click **Launch**!`
       setIsTyping(false);
     }, 1200);
   };
+
+  useEffect(() => {
+    if (!selectedChapter) return;
+
+    const request: GeminiQuestionRequest = {
+      className: selectedChapter.grade,
+      chapter: selectedChapter.title,
+      difficulty: 'Intermediate',
+      numberOfQuestions: 5,
+    };
+
+    let cancelled = false;
+    setIsGeneratingQuestions(true);
+    generateQuestions(request)
+      .then((result) => {
+        if (cancelled) return;
+        setGeneratedQuestions(result);
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: 'ai',
+            text: `I have generated practice questions for ${selectedChapter.title} (Class ${selectedChapter.grade}). You can ask me for more chapter-specific explanation or use the existing simulations for visualization.`,
+          },
+        ]);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: 'ai',
+            text: 'I could not generate chapter questions at this time. Please check your Gemini API settings or try again later.',
+          },
+        ]);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsGeneratingQuestions(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedChapter]);
 
   // -----------------------------------------------------------
   // ANIMATION LOOPS FOR EACH SIMULATION CANVAS
