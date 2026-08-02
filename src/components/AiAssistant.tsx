@@ -191,6 +191,59 @@ Observe the wave crests (cyan) and troughs (dark blue) propagating from the doub
     waves: 'Double Slit Wave Interference',
   };
 
+  const renderQuestionCategory = (title: string, items: Array<{ question: string; answer?: string; options?: string[] }>) => {
+    if (!items.length) return null;
+
+    return (
+      <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+        <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-cyan-300">{title}</div>
+        <div className="mt-2 space-y-2">
+          {items.slice(0, 2).map((item, idx) => (
+            <div key={`${title}-${idx}`} className="text-xs text-slate-300">
+              <p className="font-medium text-slate-200">{item.question}</p>
+              {item.options && item.options.length > 0 ? (
+                <p className="mt-1 text-[11px] text-slate-400">{item.options.join(' • ')}</p>
+              ) : item.answer ? (
+                <p className="mt-1 text-[11px] text-cyan-400">Answer: {item.answer}</p>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const handleGenerateChapterQuestions = async (showIntroMessage: boolean) => {
+    if (!selectedChapter) return;
+
+    const request: GeminiQuestionRequest = {
+      className: selectedChapter.grade,
+      chapter: selectedChapter.title,
+      difficulty: 'Intermediate',
+      numberOfQuestions: 5,
+    };
+
+    setIsGeneratingQuestions(true);
+    try {
+      const result = await generateQuestions(request);
+      setGeneratedQuestions(result);
+      if (showIntroMessage) {
+        setMessages((prev) => [
+          ...prev,
+          { sender: 'ai', text: `Here are some ${selectedChapter.title} practice questions for Class ${selectedChapter.grade}.`, equations: [] },
+        ]);
+      }
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'ai', text: 'I could not fetch chapter questions right now, but I can still help explain concepts.', equations: [] },
+      ]);
+    } finally {
+      setIsTyping(false);
+      setIsGeneratingQuestions(false);
+    }
+  };
+
   const handleSend = () => {
     if (!inputMessage.trim()) return;
     const userMsg = inputMessage;
@@ -200,31 +253,7 @@ Observe the wave crests (cyan) and troughs (dark blue) propagating from the doub
 
     const shouldGenerateChapterQuestions = selectedChapter && /question|practice|generate|mcq|viva|numerical/i.test(userMsg);
     if (shouldGenerateChapterQuestions) {
-      const request: GeminiQuestionRequest = {
-        className: selectedChapter.grade,
-        chapter: selectedChapter.title,
-        difficulty: 'Intermediate',
-        numberOfQuestions: 5,
-      };
-      setIsGeneratingQuestions(true);
-      generateQuestions(request)
-        .then((result) => {
-          setGeneratedQuestions(result);
-          setMessages((prev) => [
-            ...prev,
-            { sender: 'ai', text: `Here are some ${selectedChapter.title} practice questions for Class ${selectedChapter.grade}.`, equations: [] },
-          ]);
-        })
-        .catch(() => {
-          setMessages((prev) => [
-            ...prev,
-            { sender: 'ai', text: 'I could not fetch chapter questions right now, but I can still help explain concepts.', equations: [] },
-          ]);
-        })
-        .finally(() => {
-          setIsTyping(false);
-          setIsGeneratingQuestions(false);
-        });
+      void handleGenerateChapterQuestions(true);
       return;
     }
 
@@ -1149,6 +1178,32 @@ Use the sliders on the right to set the launch parameters and click **Launch**!`
               </span>
             </div>
           ))}
+
+          {generatedQuestions && (
+            <div className="flex flex-col items-start">
+              <div className="max-w-[90%] rounded-2xl rounded-tl-none border border-slate-800 bg-slate-950/80 p-4 text-slate-200 shadow-md">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-sm font-semibold text-cyan-400">Practice Questions</h4>
+                    <p className="text-[11px] text-slate-400">Generated from the current chapter context.</p>
+                  </div>
+                  <button
+                    onClick={() => void handleGenerateChapterQuestions(false)}
+                    className="rounded-lg border border-cyan-800/40 bg-cyan-950/40 px-2.5 py-1.5 text-[11px] font-medium text-cyan-300 transition hover:bg-cyan-900/50"
+                  >
+                    {isGeneratingQuestions ? 'Generating…' : 'Generate New'}
+                  </button>
+                </div>
+                <div className="mt-3 space-y-3">
+                  {renderQuestionCategory('MCQs', generatedQuestions.mcqs)}
+                  {renderQuestionCategory('Short Questions', generatedQuestions.shortQuestions)}
+                  {renderQuestionCategory('Long Questions', generatedQuestions.longQuestions)}
+                  {renderQuestionCategory('Numerical Problems', generatedQuestions.numericalProblems)}
+                  {renderQuestionCategory('Viva Questions', generatedQuestions.vivaQuestions)}
+                </div>
+              </div>
+            </div>
+          )}
 
           {isTyping && (
             <div className="flex flex-col items-start">
