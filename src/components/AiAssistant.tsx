@@ -191,24 +191,6 @@ Observe the wave crests (cyan) and troughs (dark blue) propagating from the doub
     waves: 'Double Slit Wave Interference',
   };
 
-  const handlePresetClick = (preset: typeof presets[0]) => {
-    setActiveSim(preset.sim);
-    onSimExplored(simNames[preset.sim]);
-    setMessages((prev) => [
-      ...prev,
-      { sender: 'user', text: preset.prompt },
-    ]);
-
-    setIsTyping(true);
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { sender: 'ai', text: preset.response, simType: preset.sim, equations: preset.equations },
-      ]);
-      setIsTyping(false);
-    }, 800);
-  };
-
   const handleSend = () => {
     if (!inputMessage.trim()) return;
     const userMsg = inputMessage;
@@ -1180,17 +1162,8 @@ Use the sliders on the right to set the launch parameters and click **Launch**!`
           <div ref={chatEndRef} />
         </div>
 
-        {/* Preset suggestions list */}
-        <div className="px-4 py-2 bg-slate-950/40 border-t border-slate-800/50 flex flex-wrap gap-1.5 shrink-0">
-          {presets.map((preset, index) => (
-            <button
-              key={index}
-              onClick={() => handlePresetClick(preset)}
-              className="text-[11px] font-medium px-2.5 py-1 rounded-full border border-slate-800 bg-slate-900 text-slate-300 hover:border-cyan-500/40 hover:text-cyan-400 hover:bg-slate-950 transition-all duration-200"
-            >
-              {preset.title}
-            </button>
-          ))}
+        <div className="px-4 py-3 bg-slate-950/40 border-t border-slate-800/50 text-[11px] text-slate-400">
+          Ask the AI for chapter practice questions or conceptual help. If you want chapter-aligned questions, select a chapter in the learning sidebar first and then ask for practice or MCQs.
         </div>
 
         {/* Text Area Input */}
