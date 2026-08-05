@@ -223,9 +223,11 @@ Observe the wave crests (cyan) and troughs (dark blue) propagating from the doub
       numberOfQuestions: 5,
     };
 
+    console.log('[AiAssistant] handleGenerateChapterQuestions start', { request, showIntroMessage });
     setIsGeneratingQuestions(true);
     try {
       const result = await generateQuestions(request);
+      console.log('[AiAssistant] generateQuestions returned', result);
       setGeneratedQuestions(result);
       if (showIntroMessage) {
         setMessages((prev) => [
@@ -233,7 +235,8 @@ Observe the wave crests (cyan) and troughs (dark blue) propagating from the doub
           { sender: 'ai', text: `Here are some ${selectedChapter.title} practice questions for Class ${selectedChapter.grade}.`, equations: [] },
         ]);
       }
-    } catch {
+    } catch (error) {
+      console.error('[AiAssistant] generateQuestions failed', error);
       setMessages((prev) => [
         ...prev,
         { sender: 'ai', text: 'I could not fetch chapter questions right now, but I can still help explain concepts.', equations: [] },
@@ -395,6 +398,10 @@ Use the sliders on the right to set the launch parameters and click **Launch**!`
       cancelled = true;
     };
   }, [selectedChapter]);
+
+  useEffect(() => {
+    console.log('[AiAssistant] render generatedQuestions', generatedQuestions);
+  }, [generatedQuestions]);
 
   // -----------------------------------------------------------
   // ANIMATION LOOPS FOR EACH SIMULATION CANVAS

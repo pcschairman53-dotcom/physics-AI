@@ -63,18 +63,24 @@ const extractJsonPayload = (text: string) => {
 };
 
 export const generateQuestions = async (request: GeminiQuestionRequest): Promise<GeneratedQuestionSet> => {
+  console.log('[GeminiService] generateQuestions start', request);
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
+  console.log('[GeminiService] API key exists:', Boolean(apiKey));
   if (!apiKey) {
+    console.error('[GeminiService] missing Gemini API key: VITE_GEMINI_API_KEY is not set');
     throw new Error('missing-api-key');
   }
 
   const cached = getCachedGeneratedQuestions(request);
   if (cached) {
+    console.log('[GeminiService] using cached generated questions', cached);
     return cached;
   }
 
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:generateContent?key=${apiKey}`;
+  console.log('[GeminiService] about to fetch Gemini API', apiUrl);
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:generateContent?key=${apiKey}`,
+    apiUrl,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -99,20 +105,26 @@ export const generateQuestions = async (request: GeminiQuestionRequest): Promise
   );
 
   if (!response.ok) {
+    console.error('[GeminiService] Gemini API request failed', response.status, response.statusText);
     throw new Error(`gemini-request-failed:${response.status}`);
   }
 
   const payload = await response.json();
+  console.log('[GeminiService] Gemini response payload', payload);
   const text = payload?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  console.log('[GeminiService] Gemini response text', text);
   const jsonText = extractJsonPayload(text);
+  console.log('[GeminiService] extracted JSON payload', jsonText);
 
   let parsed: Partial<GeneratedQuestionSet>;
   try {
     parsed = JSON.parse(jsonText) as Partial<GeneratedQuestionSet>;
-  } catch {
+  } catch (error) {
+    console.error('[GeminiService] failed to parse Gemini JSON', error, jsonText);
     throw new Error('gemini-response-invalid');
   }
 
+  console.log('[GeminiService] parsed JSON', parsed);
   const normalized = normalizeQuestionSet(parsed);
   persistGeneratedQuestions(request, normalized);
   return normalized;
